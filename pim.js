@@ -37,10 +37,6 @@ process.stdin.on('data', function (data) {
     };
   });
 
-  tree = tree.filter(function (value) {
-    return value.trigger;
-  });
-
   tree.forEach(function (item) {
     var trigger = ('[' + item.trigger + ']').green;
     process.stdout.write(trigger + ' ' + item.value + '\n');
