@@ -8,18 +8,23 @@ var exec = require('child_process').exec;
 
 var items = [];
 var tree = [];
-var HOMEROW_KEYS = 'asdfqwerzxcv';
+var KEYS = 'asdfqwerzxcv';
 
-function getTriggerSequence(choices_size, index) {
-  var sequence = '';
-  var len = Math.ceil(choices_size / HOMEROW_KEYS.length);
+function indexToTrigger(index) {
+  var trigger = "",
+      radix = KEYS.length,
+      Q = index, R;
 
-  for (var i = 0; i < len; i++) {
-    sequence += HOMEROW_KEYS[(index + i) % HOMEROW_KEYS.length]
+  while (true) {
+    R = Q % radix;
+    trigger = KEYS.charAt(R) + trigger;
+    Q = (Q - R) / radix;
+    if (Q == 0) break;
   }
 
-  return sequence;
+  return ((index < 0) ? "-" + trigger : trigger);
 }
+
 
 process.stdin.on('data', function (data) {
   items = items.concat(data.toString().split('\n'));
@@ -27,13 +32,13 @@ process.stdin.on('data', function (data) {
 
   tree = items.map(function (value, index) {
     return {
-      trigger: getTriggerSequence(items.length, index)
+      trigger: indexToTrigger(index)
     , value: value
     };
   });
 
-  tree = tree.filter(function (value, index) {
-    return index <= HOMEROW_KEYS.length;
+  tree = tree.filter(function (value) {
+    return value.trigger;
   });
 
   tree.forEach(function (item) {
@@ -82,12 +87,10 @@ ttys.stdin.on('keypress', function (ch, key) {
   input += key.name;
 
   var results = (tree.filter(function (item, i) {
-    return item.trigger === input;
+    return item.trigger.startsWith(input);
   }) || []);
 
   if (results.length === 1) {
     doResult(results[0]);
-  //} else if (results.length === 0 ){
-    //input = '';
   }
 });
