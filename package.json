@@ -1,13 +1,13 @@
 {
-  "name": "pim",
+  "name": "pfu",
   "version": "1.0.0",
   "description": "vim-like stdin picker",
-  "main": "pim.js",
+  "main": "pfu.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "bin": {
-    "pim": "./pim.js"
+    "pfu": "./pfu.js"
   },
   "keywords": [
     "vim",

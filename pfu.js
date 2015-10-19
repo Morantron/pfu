@@ -82,8 +82,11 @@ ttys.stdin.on('keypress', function (ch, key) {
 
   input += key.name;
 
+  var matching = new RegExp("^" + input);
+
   var results = (tree.filter(function (item, i) {
-    return item.trigger.startsWith(input);
+    return matching.test(item.trigger);
+    //return item.trigger.startsWith(input);
   }) || []);
 
   if (results.length === 1) {
