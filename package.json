@@ -1,0 +1,25 @@
+{
+  "name": "pim",
+  "version": "1.0.0",
+  "description": "vim-like stdin picker",
+  "main": "pim.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bin": {
+    "pim": "./pim.js"
+  },
+  "keywords": [
+    "vim",
+    "pick",
+    "vimium"
+  ],
+  "author": "Jorge Morante",
+  "license": "ISC",
+  "dependencies": {
+    "colors": "^1.1.2",
+    "keypress": "^0.2.1",
+    "minimist": "^1.2.0",
+    "ttys": "0.0.3"
+  }
+}
