@@ -79,6 +79,15 @@ ttys.stdin.on('keypress', function (ch, key) {
     process.exit();
   }
 
+  if (key.name === 'escape') {
+    input = '';
+    return;
+  }
+
+  if (HOMEROW_KEYS.indexOf(key.name) < 0) {
+    return;
+  }
+
   input += key.name;
 
   var results = (tree.filter(function (item, i) {
