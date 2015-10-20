@@ -74,8 +74,16 @@ function doResult(result) {
 }
 
 var input = '';
+var waiting = false;
+var timeout;
 
 ttys.stdin.on('keypress', function (ch, key) {
+  waiting = false;
+
+  if (timeout) {
+    clearTimeout(timeout)
+  }
+
   if (key.name === 'c' && key.ctrl) {
     process.exit();
   }
@@ -86,10 +94,17 @@ ttys.stdin.on('keypress', function (ch, key) {
 
   var results = (tree.filter(function (item, i) {
     return matching.test(item.trigger);
-    //return item.trigger.startsWith(input);
   }) || []);
 
   if (results.length === 1) {
     doResult(results[0]);
+  } else if(results.length >= 1) {
+    waiting = true;
+
+    timeout = setTimeout(function () {
+      if (waiting) {
+        doResult(results[0]);
+      }
+    }, 200);
   }
 });
