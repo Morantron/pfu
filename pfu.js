@@ -9,25 +9,39 @@ var ansiEscapes = require('ansi-escapes');
 
 var items = [];
 var tree = [];
-var KEYS = 'asdfqwerzxcv';
+var KEYS = 'sadfjklewcmpgh';
 
 var input = '';
 var waiting = false;
 var timeout;
 
-function indexToTrigger(index) {
-  var trigger = "",
-      radix = KEYS.length,
-      Q = index, R;
+/**
+ * Hinter magic blatantly ~~stolen~~ inspired by vimium.
+ */
+function buildHinter(charset, dataLength) {
+  var char_map = charset.split('').reduce(function (map, digit, index) {
+    map[index.toString(charset.length)] = charset[index];
+    return map;
+  }, {});
 
-  while (true) {
-    R = Q % radix;
-    trigger = KEYS.charAt(R) + trigger;
-    Q = (Q - R) / radix;
-    if (Q == 0) break;
+  var digitsNeeded = Math.ceil(Math.log(dataLength) / Math.log(charset.length))
+
+  var shortHintCount = Math.floor(
+    (Math.pow(charset.length, digitsNeeded) - dataLength)
+    / charset.length
+  );
+
+  return function (n) {
+    if (n > shortHintCount) {
+      n = (shortHintCount + 1) * charset.length + (n - shortHintCount)
+    }
+
+    var hint = n.toString(charset.length).split('').map(function (digit) {
+      return char_map[digit]
+    }).join('');
+
+    return hint;
   }
-
-  return ((index < 0) ? "-" + trigger : trigger);
 }
 
 var printResults = (function () {
@@ -87,9 +101,11 @@ process.stdin.on('data', function (data) {
   items = items.concat(data.toString().split('\n'));
   items.pop();
 
+  var hinter = buildHinter(KEYS, items.length);
+
   tree = items.map(function (value, index) {
     return {
-      trigger: indexToTrigger(index)
+      trigger: hinter(index)
     , value: value
     };
   });
