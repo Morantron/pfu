@@ -5,10 +5,15 @@ var keypress = require('keypress');
 var ttys = require('ttys');
 var parseArgs = require('minimist');
 var exec = require('child_process').exec;
+var ansiEscapes = require('ansi-escapes');
 
 var items = [];
 var tree = [];
 var KEYS = 'asdfqwerzxcv';
+
+var input = '';
+var waiting = false;
+var timeout;
 
 function indexToTrigger(index) {
   var trigger = "",
@@ -25,6 +30,58 @@ function indexToTrigger(index) {
   return ((index < 0) ? "-" + trigger : trigger);
 }
 
+var printResults = (function () {
+  var printed_lines = 0;
+  var saved_position = false;
+
+  function cursorSavePosition() {
+    saved_position = true;
+    process.stdout.write(ansiEscapes.cursorSavePosition);
+  }
+
+  function cursorRestorePosition() {
+    saved_position = false;
+    process.stdout.write(ansiEscapes.cursorRestorePosition);
+  }
+
+  function eraseLine() {
+    process.stdout.write(ansiEscapes.eraseLine);
+  }
+
+  function cursorDown(i) {
+    process.stdout.write(ansiEscapes.cursorDown(i));
+  }
+
+  function clearPrintedLines() {
+    cursorRestorePosition();
+    cursorSavePosition();
+
+    for (var i = 0, len = printed_lines; i < len; i++) {
+      cursorDown(1);
+      eraseLine();
+    }
+
+    cursorRestorePosition();
+    cursorSavePosition();
+    printed_lines = 0;
+
+    cursorRestorePosition();
+  }
+
+  return function (results, matching) {
+    if (printed_lines > 0) {
+      clearPrintedLines();
+    }
+
+    cursorSavePosition();
+
+    results.forEach(function (item) {
+      var trigger = ('[' + item.trigger + ']').green;
+      process.stdout.write(trigger + ' ' + item.value + '\n');
+      printed_lines++;
+    });
+  }
+})();
 
 process.stdin.on('data', function (data) {
   items = items.concat(data.toString().split('\n'));
@@ -37,10 +94,7 @@ process.stdin.on('data', function (data) {
     };
   });
 
-  tree.forEach(function (item) {
-    var trigger = ('[' + item.trigger + ']').green;
-    process.stdout.write(trigger + ' ' + item.value + '\n');
-  });
+  printResults(tree);
 });
 
 keypress(ttys.stdin);
@@ -68,14 +122,10 @@ function doResult(result) {
       process.exit(0);
     });
   } else {
-    process.stdout.write(result.value);
+    process.stdout.write(result.value + '\n');
     process.exit(0);
   }
 }
-
-var input = '';
-var waiting = false;
-var timeout;
 
 ttys.stdin.on('keypress', function (ch, key) {
   waiting = false;
@@ -96,6 +146,8 @@ ttys.stdin.on('keypress', function (ch, key) {
     return matching.test(item.trigger);
   }) || []);
 
+  printResults(results);
+
   if (results.length === 1) {
     doResult(results[0]);
   } else if(results.length >= 1) {
@@ -105,6 +157,6 @@ ttys.stdin.on('keypress', function (ch, key) {
       if (waiting) {
         doResult(results[0]);
       }
-    }, 200);
+    }, 500);
   }
 });

@@ -17,6 +17,7 @@
   "author": "Jorge Morante",
   "license": "ISC",
   "dependencies": {
+    "ansi-escapes": "^1.1.0",
     "colors": "^1.1.2",
     "keypress": "^0.2.1",
     "minimist": "^1.2.0",
